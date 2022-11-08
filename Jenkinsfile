@@ -51,25 +51,31 @@ RUN pip3 install mercurial
 	  git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
 	  echo "[extensions]" >> $HOME/.hgrc
 	  echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
-	  hg fn-setup --nofms --nowot
+	  hg fn-setup --nofms --nowot1
         fi
       '''
     }
 
-    stage("clone") {
-      def PROJECT = "infocalypse"
-      def key = keys[PROJECT]
-      def dir = "throwaway-$PROJECT"
-      sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
-      sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
-      sh "rm -r ${dir}"
+    def clone(project, key) {
+      stage("clone-${project}" ) {
+        def dir = "throwaway-$project"
+        sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
+        sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
+        sh "rm -r ${dir}"
+      }
     }
-    stage("pull") {
-      def PROJECT = "infocalypse"
-      def key = keys[PROJECT]
-      def dir = "perm-$PROJECT"
-      sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
-      sh "export HOME=`pwd`; cd ${dir} && hg pull"
+
+    def pull(project, key) {
+      stage("pull-${project}") {
+        def dir = "perm-$project"
+        sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
+        sh "export HOME=`pwd`; cd ${dir} && hg pull"
+      }
     }
+
+    def project = "infocalypse"
+    def key = keys[PROJECT]
+    clone(project, key);
+    pull(project, key);
   }
 }
