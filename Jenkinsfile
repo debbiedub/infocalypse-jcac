@@ -19,7 +19,14 @@ RUN pip3 install mercurial
 
     stage('Get infocalypse') {
       sh '''
-        if git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.out
+        if test -d dgof
+	then
+          (
+            PATH=$PATH:$(pwd)/dgof
+            cd dgof
+	    git pull
+	  )
+        elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.out
         then
           cat gitclone.out 1>&2
         else
