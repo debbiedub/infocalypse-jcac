@@ -56,7 +56,7 @@ RUN pip3 install mercurial
       '''
     }
 
-    def clone(project, key) {
+    def clone = { project, key ->
       stage("clone-${project}" ) {
         def dir = "throwaway-$project"
         sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
@@ -65,7 +65,7 @@ RUN pip3 install mercurial
       }
     }
 
-    def pull(project, key) {
+    def pull = { project, key ->
       stage("pull-${project}") {
         def dir = "perm-$project"
         sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
