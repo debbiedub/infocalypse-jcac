@@ -12,7 +12,8 @@ node ('debbies') {
   writeFile file:'Dockerfile', text: '''
 FROM python:3
 
-RUN pip3 install mercurial pyFreenet3
+RUN pip3 install pyFreenet3
+RUN pip3 install mercurial
   '''
   docker.build('pyfreenet:3').inside("--network=host") {
 
