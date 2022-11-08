@@ -56,16 +56,14 @@ RUN pip3 install mercurial
       '''
     }
 
-    def clone = { project, key ->
+    def process = { project, key ->
       stage("clone-${project}" ) {
         def dir = "throwaway-$project"
         sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
         sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
         sh "rm -r ${dir}"
       }
-    }
 
-    def pull = { project, key ->
       stage("pull-${project}") {
         def dir = "perm-$project"
         sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
@@ -74,8 +72,7 @@ RUN pip3 install mercurial
     }
 
     def project = "infocalypse"
-    def key = keys[PROJECT]
-    clone(project, key);
-    pull(project, key);
+    def key = keys[project]
+    process(project, key);
   }
 }
