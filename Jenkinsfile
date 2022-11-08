@@ -30,24 +30,18 @@ RUN pip3 install mercurial
         fi
         '''
 
-      sh 'PATH=$PATH:$(pwd)/dgof git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/'
+      sh 'PATH=$PATH:$(pwd)/dgof git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse'
     }
 
-    matrix {
-      axes {
-        axis {
-	  name "PROJECT"
-	  values "infocalypse"
-	}
-      }	  
-      stages {
-        stage("clone") {
-          sh "echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
-	}
-	stage("pull") {
-          sh "echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
-	  sh "echo cd perm-$PROJECT && hg pull"
-        }
+    stages {
+      stage("clone") {
+        def PROJECT = "infocalypse"
+        sh "echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
+      }
+      stage("pull") {
+        def PROJECT = "infocalypse"
+        sh "echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
+        sh "echo cd perm-$PROJECT && hg pull"
       }
     }
   }
