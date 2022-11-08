@@ -5,7 +5,7 @@
 //
 
 def keys = [
-  "infocalypse": "USK@key"
+  "infocalypse": "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/29"
 ]
 
 node ('debbies') {
