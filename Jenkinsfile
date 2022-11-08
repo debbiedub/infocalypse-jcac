@@ -59,9 +59,9 @@ RUN pip3 install mercurial
       def PROJECT = "infocalypse"
       def key = keys[PROJECT]
       def dir = "throwaway-$PROJECT"
-      sh "test -d ${dir} && rm -r ${dir}"
+      sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
       sh "export HOME=`pwd`; echo hg clone ${key} ${dir}"
-      sh "test -d ${dir} && rm -r ${dir}"
+      sh "rm -r ${dir}"
     }
     stage("pull") {
       def PROJECT = "infocalypse"
