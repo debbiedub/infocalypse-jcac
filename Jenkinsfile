@@ -41,7 +41,10 @@ RUN pip3 install mercurial
         export PATH=$PATH:$(pwd)/dgof
         if test -d infocalypse
 	then
-	  git pull --ff-only
+	  (
+	    cd infocalypse
+            git pull --ff-only
+	  )
 	else
 	  # Pull from the dgof mirror
 	  git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
