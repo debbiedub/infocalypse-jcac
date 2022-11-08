@@ -17,7 +17,7 @@ RUN pip3 install mercurial
   '''
   docker.build('hgfreenet:3').inside("--network=host") {
 
-    stage('Get infocalypse') {
+    stage('Get tool') {
       sh '''
         if test -d dgof
 	then
