@@ -15,16 +15,16 @@ FROM python:3
 RUN pip3 install pyFreenet3
 RUN pip3 install mercurial
   '''
-  docker.build('pyfreenet:3').inside("--network=host") {
+  docker.build('hgfreenet:3').inside("--network=host") {
 
     stage('Get infocalypse') {
       sh '''
         if test -d dgof
 	then
           (
-            PATH=$PATH:$(pwd)/dgof
+            export PATH=$PATH:$(pwd)/dgof
             cd dgof
-	    git pull
+	    git pull --ff-only
 	  )
         elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.out
         then
@@ -37,7 +37,18 @@ RUN pip3 install mercurial
         fi
         '''
 
-      sh 'PATH=$PATH:$(pwd)/dgof git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse'
+      sh '''
+        export PATH=$PATH:$(pwd)/dgof
+        if test -d infocalypse
+	then
+	  git pull --ff-only
+	else
+	  # Pull from the dgof mirror
+	  git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
+	  echo "[extensions]" >> $HOME/.hgrc
+	  echo "infocalypse=$(pwd)/infocalypse" >> $HOME/.hgrc
+        fi
+      '''
     }
 
     stages {
