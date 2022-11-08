@@ -65,6 +65,8 @@ RUN pip3 install mercurial
         sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
         sh "export HOME=`pwd`; cd ${dir} && hg pull"
       }
+
+      // Add stages for reinsert once that is working
     }
 
     process("infocalypse", "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/29");
