@@ -51,16 +51,14 @@ RUN pip3 install mercurial
       '''
     }
 
-    stages {
-      stage("clone") {
-        def PROJECT = "infocalypse"
-        sh "echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
-      }
-      stage("pull") {
-        def PROJECT = "infocalypse"
-        sh "echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
-        sh "echo cd perm-$PROJECT && hg pull"
-      }
+    stage("clone") {
+      def PROJECT = "infocalypse"
+      sh "echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
+    }
+    stage("pull") {
+      def PROJECT = "infocalypse"
+      sh "echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
+      sh "echo cd perm-$PROJECT && hg pull"
     }
   }
 }
