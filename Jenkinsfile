@@ -39,6 +39,7 @@ RUN pip3 install mercurial
 
       sh '''
         export PATH=$PATH:$(pwd)/dgof
+	export HOME=`pwd`
         if test -d infocalypse
 	then
 	  (
@@ -56,12 +57,12 @@ RUN pip3 install mercurial
 
     stage("clone") {
       def PROJECT = "infocalypse"
-      sh "echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
+      sh "export HOME=`pwd`; echo hg clone ${keys[$PROJECT]} throwaway-$PROJECT"
     }
     stage("pull") {
       def PROJECT = "infocalypse"
-      sh "echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
-      sh "echo cd perm-$PROJECT && hg pull"
+      sh "export HOME=`pwd`; echo test -d perm-$PROJECT || hg clone ${keys[$PROJECT]} perm-$PROJECT"
+      sh "export HOME=`pwd`; echo cd perm-$PROJECT && hg pull"
     }
   }
 }
