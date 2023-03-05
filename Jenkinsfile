@@ -57,6 +57,12 @@ RUN pip3 install mercurial
     }
 
     def process = { project, key ->
+      stage("pull-${project}") {
+        def dir = "perm-$project"
+        sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
+        sh "export HOME=`pwd`; cd ${dir} && hg pull"
+      }
+
       stage("clone-${project}" ) {
         def dir = "throwaway-$project"
         sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
@@ -64,16 +70,10 @@ RUN pip3 install mercurial
         sh "rm -r ${dir}"
       }
 
-      stage("pull-${project}") {
-        def dir = "perm-$project"
-        sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
-        sh "export HOME=`pwd`; cd ${dir} && hg pull"
-      }
-
       // Add stages for reinsert once that is working
     }
 
-    process("infocalypse", "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/29");
+    process("infocalypse", "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/31");
     process("fred", "USK@yJUguKTfUHgVutplApc8A3ucq~QogPfqx3-1ZunKjYk,EzZzXErTnhC~ll7HGpgDDik15KTFlwdpuGcRA7HL5uk,AQACAAE/fred.R1/0");
     process("pyFreenet", "USK@dqWzp0iGflRepXyBXHzxyKMSxq90kP2Lof8EdEr6woQ,nL53lCqG5ssdNtXMtVzTePJ4QYWGLkAhWMdmRqxwFjw,AQACAAE/pyFreenet.R1/1");
     process("hg-git", "USK@BTOaKIcNsNoa-z0qIAjXI0WAN25tNru8GtMCSsZh-sk,cZUVEEzoud2cdFHtrf4EC-EKsjvHBMRwvAzebqe4fjM,AQACAAE/hg-git.R1/1");
