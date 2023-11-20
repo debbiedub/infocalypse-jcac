@@ -10,7 +10,7 @@ FROM python:3
 
 RUN pip3 install --upgrade pip
 RUN pip3 install pyFreenet3
-RUN pip3 install 'mercurial' // <6'
+RUN pip3 install mercurial
   '''
   docker.build('hgfreenet:3').inside("--network=host") {
 
