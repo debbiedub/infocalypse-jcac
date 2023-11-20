@@ -6,8 +6,9 @@
 
 node ('debbies') {
   writeFile file:'Dockerfile', text: '''
-FROM python:3.11
+FROM python:3.10
 
+RUN pip3 install --upgrade pip
 RUN pip3 install pyFreenet3
 RUN pip3 install 'mercurial<6'
   '''
