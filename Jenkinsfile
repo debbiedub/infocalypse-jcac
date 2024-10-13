@@ -52,7 +52,7 @@ RUN pip3 install 'mercurial<6'
 	  git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
 	  echo "[extensions]" >> $HOME/.hgrc
 	  echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
-	  hg fn-setup --nofms --nowot1
+	  hg fn-setup --nofms --nowot
         fi
       '''
     }
