@@ -4,19 +4,27 @@
 // 3. refresh 2, 3, 5
 //
 
+// global variables
+//   docker_image
+//   docker_params
+
 timestamps {
-node ('debbies') {
-  writeFile file:'Dockerfile', text: '''
+  stage('Prepare docker image') {
+    node ('debbies') {
+      writeFile file:'Dockerfile', text: '''
 FROM python:3.10
 
 RUN pip3 install --upgrade pip
 RUN pip3 install pyFreenet3
 RUN pip3 install 'mercurial<6'
-  '''
-  docker.build('hgfreenet:3').inside("--network=host") {
+  ''';
+      docker_params = "--network=host";
+      docker_image = docker.build('hgfreenet:3');
+    }
+  }
 
-    stage('Get tool') {
-      sh '''
+  stage('Get tool') {
+    sh '''
         if test -d dgof
 	then
           (
@@ -37,9 +45,9 @@ RUN pip3 install 'mercurial<6'
           sed -i 's,\\(/dgof/[0-9]*/\\).*,\\1,' newusk
           git clone http://localhost:8888/freenet:$(cat newusk) dgof
         fi
-        '''
+        ''';
 
-      sh '''
+    sh '''
         export PATH=$PATH:$(pwd)/dgof
 	export HOME=`pwd`
         if test -d infocalypse
@@ -55,31 +63,67 @@ RUN pip3 install 'mercurial<6'
 	  echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
 	  hg fn-setup --nofms --nowot
         fi
-      '''
-    }
-
-    def process = { project, key ->
-      stage("pull-${project}") {
-        def dir = "perm-$project"
-        sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
-        sh "export HOME=`pwd`; cd ${dir} && hg pull"
-      }
-
-      stage("clone-${project}" ) {
-        def dir = "throwaway-$project"
-        sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
-        sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
-        sh "rm -r ${dir}"
-      }
-
-      // Add stages for reinsert once that is working
-    }
-
-    process("infocalypse", "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/31");
-    process("fred", "USK@yJUguKTfUHgVutplApc8A3ucq~QogPfqx3-1ZunKjYk,EzZzXErTnhC~ll7HGpgDDik15KTFlwdpuGcRA7HL5uk,AQACAAE/fred.R1/0");
-    process("pyFreenet", "USK@dqWzp0iGflRepXyBXHzxyKMSxq90kP2Lof8EdEr6woQ,nL53lCqG5ssdNtXMtVzTePJ4QYWGLkAhWMdmRqxwFjw,AQACAAE/pyFreenet.R1/1");
-    process("hg-git", "USK@BTOaKIcNsNoa-z0qIAjXI0WAN25tNru8GtMCSsZh-sk,cZUVEEzoud2cdFHtrf4EC-EKsjvHBMRwvAzebqe4fjM,AQACAAE/hg-git.R1/1");
-    process("b", "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/b.R1/1");
+      ''';
   }
 }
+
+def gen_cl = { project, key ->
+  boolean perm_done = false
+  boolean toss_done = false
+  return {
+    if (!perm_done) {
+      def dir = "perm-$project"
+      sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
+      sh "export HOME=`pwd`; cd ${dir} && hg pull"
+      perm_done = true
+      return 2000
+    }
+
+    if (!toss_done) {
+      def dir = "throwaway-$project"
+      sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
+      sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
+      sh "rm -r ${dir}"
+      toss_done = true
+    }
+
+    // Add stages for reinsert once that is working
+    return 0
+  }
+}
+
+def buildParallelMap = [:]
+def to_process = [
+		  "infocalypse": "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/infocalypse.R1/31",
+		  "fred": "USK@yJUguKTfUHgVutplApc8A3ucq~QogPfqx3-1ZunKjYk,EzZzXErTnhC~ll7HGpgDDik15KTFlwdpuGcRA7HL5uk,AQACAAE/fred.R1/0",
+		  "pyFreenet": "USK@dqWzp0iGflRepXyBXHzxyKMSxq90kP2Lof8EdEr6woQ,nL53lCqG5ssdNtXMtVzTePJ4QYWGLkAhWMdmRqxwFjw,AQACAAE/pyFreenet.R1/1",
+		  "hg-git": "USK@BTOaKIcNsNoa-z0qIAjXI0WAN25tNru8GtMCSsZh-sk,cZUVEEzoud2cdFHtrf4EC-EKsjvHBMRwvAzebqe4fjM,AQACAAE/hg-git.R1/1",
+		  "b": "USK@6~ZDYdvAgMoUfG6M5Kwi7SQqyS-gTcyFeaNN1Pf3FvY,OSOT4OEeg4xyYnwcGECZUX6~lnmYrZsz05Km7G7bvOQ,AQACAAE/b.R1/1",
+		  ]
+timestamps {
+  to_process.each { project, key ->
+    buildParallelMap[dirname] = {
+      stage(dirname) {
+	def cl = gen_cl(project, key)
+	def result = 1
+	// The closure cl is run using cl() on the node
+	// When it cannot do anymore (completed or needs to
+	// sleep or wait for something) it returns.
+	// If a positive value is returned, it sleeps this many seconds.
+	// This allows others to use the node while this closure doesn't.
+	while ({
+	  node ('debbies') {
+	    docker_image.inside(docker_params) {
+	      result = cl()
+		}
+	  }
+	  result > 0
+	    }()) {
+	  sleep(result)
+	}
+      }
+    }
+  }
+
+  parallel(buildParallelMap)
 }
