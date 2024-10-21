@@ -24,7 +24,8 @@ RUN pip3 install 'mercurial<6'
   }
 
   stage('Get tool') {
-    sh '''
+    node ('debbies') {
+      sh '''
         if test -d dgof
 	then
           (
@@ -47,7 +48,7 @@ RUN pip3 install 'mercurial<6'
         fi
         ''';
 
-    sh '''
+      sh '''
         export PATH=$PATH:$(pwd)/dgof
 	export HOME=`pwd`
         if test -d infocalypse
@@ -64,6 +65,7 @@ RUN pip3 install 'mercurial<6'
 	  hg fn-setup --nofms --nowot
         fi
       ''';
+    }
   }
 }
 
