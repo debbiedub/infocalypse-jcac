@@ -104,8 +104,8 @@ def to_process = [
 		  ]
 timestamps {
   to_process.each { project, key ->
-    buildParallelMap[dirname] = {
-      stage(dirname) {
+    buildParallelMap[project] = {
+      stage(project) {
 	def cl = gen_cl(project, key)
 	def result = 1
 	// The closure cl is run using cl() on the node
