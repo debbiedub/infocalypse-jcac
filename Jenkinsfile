@@ -9,7 +9,7 @@
 //   docker_params
 
 timestamps {
-  stage('Prepare docker image') {
+  stage('Prepare') {
     node ('debbies') {
       writeFile file:'Dockerfile', text: '''
 FROM python:3.10
@@ -20,11 +20,7 @@ RUN pip3 install 'mercurial<6'
   ''';
       docker_params = "--network=host";
       docker_image = docker.build('hgfreenet:3');
-    }
-  }
 
-  stage('Get tool') {
-    node ('debbies') {
       sh '''
         if test -d dgof
 	then
