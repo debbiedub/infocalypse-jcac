@@ -33,11 +33,11 @@ RUN pip3 install 'mercurial<6'
         if test -d dgof
 	then
 	  : dgof is updated
-        elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.out
+        elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.err
         then
-          cat gitclone.out 1>&2
+          cat gitclone.err 1>&2
         else
-          cp gitclone.out newusk
+          cp gitclone.err newusk
           sed -i '$s/.*USK@/USK@/p;d' newusk
           sed -i 's,\\(/dgof/[0-9]*/\\).*,\\1,' newusk
           git clone http://localhost:8888/freenet:$(cat newusk) dgof
@@ -73,6 +73,7 @@ def gen_cl = { project, key ->
       def dir = "perm-$project"
       sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
       sh "export HOME=`pwd`; cd ${dir} && hg pull"
+      sh "export HOME=`pwd`; cd ${dir} && hg log | egrep . > /dev/null"
       perm_done = true
       return 2000
     }
