@@ -21,46 +21,48 @@ RUN pip3 install 'mercurial<6'
       docker_params = "--network=host";
       docker_image = docker.build('hgfreenet:3');
 
-      sh '''
-        if test -d dgof
-	then
-          (
-            export PATH=$PATH:$(pwd)/dgof
-            cd dgof
-	    git pull --ff-only
-	  ) || rm -rf dgof
-	fi
-        if test -d dgof
-	then
-	  : dgof is updated
-        elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.err
-        then
-          cat gitclone.err 1>&2
-        else
-          cp gitclone.err newusk
-          sed -i '$s/.*USK@/USK@/p;d' newusk
-          sed -i 's,\\(/dgof/[0-9]*/\\).*,\\1,' newusk
-          git clone http://localhost:8888/freenet:$(cat newusk) dgof
-        fi
-        ''';
+      docker_image.inside(docker_params) {
+	sh '''
+	  if test -d dgof
+	  then
+	    (
+	      export PATH=$PATH:$(pwd)/dgof
+	      cd dgof
+	      git pull --ff-only
+	    ) || rm -rf dgof
+	  fi
+	  if test -d dgof
+	  then
+	    : dgof is updated
+	  elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.err
+	  then
+	    cat gitclone.err 1>&2
+	  else
+	    cp gitclone.err newusk
+	    sed -i '$s/.*USK@/USK@/p;d' newusk
+	    sed -i 's,\\(/dgof/[0-9]*/\\).*,\\1,' newusk
+	    git clone http://localhost:8888/freenet:$(cat newusk) dgof
+	  fi
+	  ''';
 
-      sh '''
-        export PATH=$PATH:$(pwd)/dgof
-	export HOME=`pwd`
-        if test -d infocalypse
-	then
-	  (
-	    cd infocalypse
-            git pull --ff-only
-	  )
-	else
-	  # Pull from the dgof mirror
-	  git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
-	  echo "[extensions]" >> $HOME/.hgrc
-	  echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
-	  hg fn-setup --nofms --nowot
-        fi
-      ''';
+	sh '''
+	  export PATH=$PATH:$(pwd)/dgof
+	  export HOME=`pwd`
+	  if test -d infocalypse
+	  then
+	    (
+	      cd infocalypse
+	      git pull --ff-only
+	    )
+	  else
+	    # Pull from the dgof mirror
+	    git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
+	    echo "[extensions]" >> $HOME/.hgrc
+	    echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
+	    hg fn-setup --nofms --nowot
+	  fi
+	''';
+      }
     }
   }
 }
