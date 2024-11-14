@@ -70,9 +70,13 @@ RUN pip3 install 'mercurial<6'
 def gen_cl = { project, key ->
   boolean perm_done = false
   boolean toss_done = false
+  boolean reinsert_done = false
+  int reinsert_level = 2
   return {
+    def perm_dir = "perm-$project"
+
     if (!perm_done) {
-      def dir = "perm-$project"
+      def dir = perm_dir
       sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
       sh "export HOME=`pwd`; cd ${dir} && hg pull"
       sh "export HOME=`pwd`; cd ${dir} && hg log | egrep . > /dev/null"
@@ -86,9 +90,19 @@ def gen_cl = { project, key ->
       sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
       sh "rm -r ${dir}"
       toss_done = true
+      return 2000
     }
 
-    // Add stages for reinsert once that is working
+    if (!reinsert_done) {
+      def level = reinsert_level++
+      def dir = perm_dir
+      sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert $level"
+      if (level < 5) {
+          return 2000
+      }
+      reinsert_done = true
+    }
+
     return 0
   }
 }
