@@ -96,7 +96,7 @@ def gen_cl = { project, key ->
     if (!reinsert_done) {
       def level = reinsert_level++
       def dir = perm_dir
-      sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert $level"
+      sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert --level $level"
       if (level < 5) {
           return 2000
       }
