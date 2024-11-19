@@ -94,6 +94,10 @@ def gen_cl = { project, key ->
     }
 
     if (!reinsert_done) {
+      if (reinsert_level == 4) {
+        // Skip level 4 of reinsert
+        reinsert_level++
+      }
       def level = reinsert_level++
       def dir = perm_dir
       sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert --level $level"
