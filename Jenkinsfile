@@ -67,15 +67,24 @@ RUN pip3 install 'mercurial<6'
   }
 }
 
+def wait_count = 0
+
 def gen_cl = { project, key ->
   boolean perm_done = false
   boolean toss_done = false
   boolean reinsert_done = false
   int reinsert_level = 2
+  int wait_laps_1_left = ++wait_count
+  int wait_laps_2_left = wait_count
+  int wait_laps_3_left = wait_count
   return {
     def perm_dir = "perm-$project"
 
     if (!perm_done) {
+      if (wait_laps_1_left-- > 0) {
+          return wait_count
+      }
+
       def dir = perm_dir
       sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
       sh "export HOME=`pwd`; cd ${dir} && hg pull"
@@ -85,6 +94,10 @@ def gen_cl = { project, key ->
     }
 
     if (!toss_done) {
+      if (wait_laps_2_left-- > 0) {
+          return wait_count
+      }
+
       def dir = "throwaway-$project"
       sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
       sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
@@ -94,6 +107,10 @@ def gen_cl = { project, key ->
     }
 
     if (!reinsert_done) {
+      if (wait_laps_3_left-- > 0) {
+          return wait_count
+      }
+
       if (reinsert_level == 4) {
         // Skip level 4 of reinsert
         reinsert_level++
@@ -102,6 +119,7 @@ def gen_cl = { project, key ->
       def dir = perm_dir
       sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert --level $level"
       if (level < 5) {
+          wait_laps_3_left = wait_count++
           return 2000
       }
       reinsert_done = true
