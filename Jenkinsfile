@@ -8,6 +8,8 @@
 //   docker_image
 //   docker_params
 
+def saved_dir = "${env.SAVED_DIR}"
+
 timestamps {
   stage('Prepare') {
     node ('debbies') {
@@ -17,52 +19,13 @@ FROM python:3.10
 RUN pip3 install --upgrade pip
 RUN pip3 install pyFreenet3
 RUN pip3 install 'mercurial<6'
+RUN git clone freenet::$(curl http://localhost:8888/freenet:USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/0/ | sed '/Permanent/s/.*freenet://;s/".*//') /usr/local/src/infocalypse
+RUN echo "[extensions]" >> $HOME/.hgrc
+RUN echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
+RUN hg fn-setup --nofms --nowot
   ''';
       docker_params = "--network=host";
       docker_image = docker.build('hgfreenet:3');
-
-      docker_image.inside(docker_params) {
-	sh '''
-	  if test -d dgof
-	  then
-	    (
-	      export PATH=$PATH:$(pwd)/dgof
-	      cd dgof
-	      git pull --ff-only
-	    ) || rm -rf dgof
-	  fi
-	  if test -d dgof
-	  then
-	    : dgof is updated
-	  elif git clone http://localhost:8888/freenet:USK@nrDOd1piehaN7z7s~~IYwH-2eK7gcQ9wAtPMxD8xPEs,y61pkcoRy-ccB7BHvLCzt3RUjeMILf8ox26NKvPZ-jk,AQACAAE/dgof/26/ dgof 2> gitclone.err
-	  then
-	    cat gitclone.err 1>&2
-	  else
-	    cp gitclone.err newusk
-	    sed -i '$s/.*USK@/USK@/p;d' newusk
-	    sed -i 's,\\(/dgof/[0-9]*/\\).*,\\1,' newusk
-	    git clone http://localhost:8888/freenet:$(cat newusk) dgof
-	  fi
-	  ''';
-
-	sh '''
-	  export PATH=$PATH:$(pwd)/dgof
-	  export HOME=`pwd`
-	  if test -d infocalypse
-	  then
-	    (
-	      cd infocalypse
-	      git pull --ff-only
-	    )
-	  else
-	    # Pull from the dgof mirror
-	    git clone freenet::USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/1/ infocalypse
-	    echo "[extensions]" >> $HOME/.hgrc
-	    echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
-	    hg fn-setup --nofms --nowot
-	  fi
-	''';
-      }
     }
   }
 }
@@ -78,7 +41,7 @@ def gen_cl = { project, key ->
   int wait_laps_2_left = wait_count
   int wait_laps_3_left = wait_count
   return {
-    def perm_dir = "perm-$project"
+    def perm_dir = "$saved_dir/perm-$project"
 
     if (!perm_done) {
       if (wait_laps_1_left-- > 0) {
@@ -86,9 +49,9 @@ def gen_cl = { project, key ->
       }
 
       def dir = perm_dir
-      sh "export HOME=`pwd`; test -d ${dir} || hg clone freenet:${key} ${dir}"
-      sh "export HOME=`pwd`; cd ${dir} && hg pull"
-      sh "export HOME=`pwd`; cd ${dir} && hg log | egrep . > /dev/null"
+      sh "test -d ${dir} || hg clone freenet:${key} ${dir}"
+      sh "cd ${dir} && hg pull"
+      sh "cd ${dir} && hg log | egrep . > /dev/null"
       perm_done = true
       return 2000
     }
@@ -98,9 +61,9 @@ def gen_cl = { project, key ->
           return wait_count
       }
 
-      def dir = "throwaway-$project"
+      def dir = "/tmp/throwaway-$project"
       sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
-      sh "export HOME=`pwd`; hg clone freenet:${key} ${dir}"
+      sh "hg clone freenet:${key} ${dir}"
       sh "rm -r ${dir}"
       toss_done = true
       return 2000
@@ -117,7 +80,7 @@ def gen_cl = { project, key ->
       }
       def level = reinsert_level++
       def dir = perm_dir
-      sh "export HOME=`pwd`; cd ${dir} && hg fn-reinsert --level $level"
+      sh "cd ${dir} && hg fn-reinsert --level $level"
       if (level < 5) {
           wait_laps_3_left = wait_count++
           return 2000
