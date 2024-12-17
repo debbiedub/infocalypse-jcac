@@ -24,7 +24,9 @@ RUN git clone http://localhost:8888/freenet:$(curl http://localhost:8888/freenet
 RUN echo "[extensions]" >> $HOME/.hgrc
 RUN echo "infocalypse=/usr/local/src/infocalypse/infocalypse" >> $HOME/.hgrc
 RUN hg fn-setup --nofms --nowot
-RUN cp /root/.hgrc /root/.infocalypse /home && chmod -R +r /home
+RUN cp /root/.hgrc /root/.infocalypse /home && \
+    sed 's,/root/,/home/,' -i /home/.infocalypse && \
+    chmod -R +r /home
   ''';
       docker_image = docker.build('hgfreenet:3', '--network=host .');
       docker_params = "--network=host --env HOME=/home -v $saved_dir:$saved_dir";
