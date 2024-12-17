@@ -21,33 +21,43 @@ RUN pip3 install pyFreenet3
 RUN pip3 install 'mercurial<6'
 RUN pip3 install defusedxml pyyaml
 RUN git clone http://localhost:8888/freenet:$(curl http://localhost:8888/freenet:USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/0/ | sed '/Permanent/s/.*freenet://;s/".*//') /usr/local/src/infocalypse
-RUN echo "[extensions]" >> $HOME/.hgrc
-RUN echo "infocalypse=/usr/local/src/infocalypse/infocalypse" >> $HOME/.hgrc
-RUN hg fn-setup --nofms --nowot
-RUN cp /root/.hgrc /root/.infocalypse /home && \
-    sed 's,/root/infocalypse_tmp,/home/infocalypse_tmp,' -i /home/.infocalypse && \
-    mkdir /home/infocalypse_tmp && \
-    chmod a+w /home/infocalypse_tmp
   ''';
       docker_image = docker.build('hgfreenet:3', '--network=host .');
-      docker_params = "--network=host --env HOME=/home -v $saved_dir:$saved_dir";
+      docker_params = "--network=host -v $saved_dir:$saved_dir";
     }
   }
 }
 
 def gen_cl = { project, key ->
+  boolean home_done = false
   boolean perm_done = false
   boolean toss_done = false
   boolean reinsert_done = false
   int reinsert_level = 2
   return {
     def perm_dir = "$saved_dir/perm-$project"
+    def home_dir = "$saved_dir/home-$project"
+
+    if (!home_done) {
+      sh "HOME=$home_dir; " + '''
+if test -d $HOME
+then
+  : 
+else
+  mkdir $HOME
+  export HOME
+  echo "[extensions]" >> $HOME/.hgrc
+  echo "infocalypse=/usr/local/src/infocalypse/infocalypse" >> $HOME/.hgrc
+  hg fn-setup --nofms --nowot
+fi
+'''
+    }
 
     if (!perm_done) {
       def dir = perm_dir
-      sh "test -d ${dir} || hg clone freenet:${key} ${dir}"
-      sh "cd ${dir} && hg pull"
-      sh "cd ${dir} && hg log | egrep . > /dev/null"
+      sh "test -d ${dir} || HOME=$home_dir hg clone freenet:${key} ${dir}"
+      sh "cd ${dir} && HOME=$home_dir hg pull"
+      sh "cd ${dir} && HOME=$home_dir hg log | egrep . > /dev/null"
       perm_done = true
       return 2000
     }
@@ -55,7 +65,7 @@ def gen_cl = { project, key ->
     if (!toss_done) {
       def dir = "/tmp/throwaway-$project"
       sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
-      sh "hg clone freenet:${key} ${dir}"
+      sh "HOME=$home_dir hg clone freenet:${key} ${dir}"
       sh "rm -r ${dir}"
       toss_done = true
       return 2000
@@ -68,7 +78,7 @@ def gen_cl = { project, key ->
       }
       def level = reinsert_level++
       def dir = perm_dir
-      sh "cd ${dir} && hg fn-reinsert --level $level"
+      sh "cd ${dir} && HOME=$home_dir hg fn-reinsert --level $level"
       reinsert_done = true
     }
 
