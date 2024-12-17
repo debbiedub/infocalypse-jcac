@@ -21,7 +21,7 @@ RUN pip3 install pyFreenet3
 RUN pip3 install 'mercurial<6'
 RUN git clone http://localhost:8888/freenet:$(curl http://localhost:8888/freenet:USK@Mm9MIkkeQhs~OMiCQ~83Vs48EvNwVRxjfeoFMOQHUYI,AxOZEuOyRM7oJjU43HFErhVw06ZIJLb8GMKNheWR3g4,AQACAAE/infocalypse/0/ | sed '/Permanent/s/.*freenet://;s/".*//') /usr/local/src/infocalypse
 RUN echo "[extensions]" >> $HOME/.hgrc
-RUN echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
+RUN echo "infocalypse=/usr/local/src/infocalypse/infocalypse" >> $HOME/.hgrc
 RUN hg fn-setup --nofms --nowot
   ''';
       docker_image = docker.build('hgfreenet:3', '--network=host .');
