@@ -24,8 +24,8 @@ RUN echo "[extensions]" >> $HOME/.hgrc
 RUN echo "infocalypse=$(pwd)/infocalypse/infocalypse" >> $HOME/.hgrc
 RUN hg fn-setup --nofms --nowot
   ''';
+      docker_image = docker.build('hgfreenet:3', '--network=host .');
       docker_params = "--network=host";
-      docker_image = docker.build('hgfreenet:3');
     }
   }
 }
