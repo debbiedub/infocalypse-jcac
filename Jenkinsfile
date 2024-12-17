@@ -25,8 +25,10 @@ RUN echo "[extensions]" >> $HOME/.hgrc
 RUN echo "infocalypse=/usr/local/src/infocalypse/infocalypse" >> $HOME/.hgrc
 RUN hg fn-setup --nofms --nowot
 RUN cp /root/.hgrc /root/.infocalypse /home && \
-    sed 's,/root/,/home/,' -i /home/.infocalypse && \
-    chmod -R +r /home
+    sed 's,/root/infocalypse_tmp,/home/infocalypse_tmp,' -i /home/.infocalypse && \
+    chmod -R +r /home && \
+    mkdir /home/infocalypse_tmp && \
+    chmod +w /home/infocalypse_tmp
   ''';
       docker_image = docker.build('hgfreenet:3', '--network=host .');
       docker_params = "--network=host --env HOME=/home -v $saved_dir:$saved_dir";
