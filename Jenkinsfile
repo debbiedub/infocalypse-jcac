@@ -27,7 +27,7 @@ RUN hg fn-setup --nofms --nowot
 RUN cp /root/.hgrc /root/.infocalypse /home && chmod -R +r /home
   ''';
       docker_image = docker.build('hgfreenet:3', '--network=host .');
-      docker_params = "--network=host --env HOME=/home";
+      docker_params = "--network=host --env HOME=/home -v $saved_dir:$saved_dir";
     }
   }
 }
