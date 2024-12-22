@@ -79,6 +79,9 @@ fi
       def level = reinsert_level++
       def dir = perm_dir
       sh "cd ${dir} && HOME=$home_dir hg fn-reinsert --level $level"
+      if (reinsert_level < 5) {
+        return 2000
+      }
       reinsert_done = true
     }
 
