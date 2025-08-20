@@ -51,6 +51,7 @@ else
   hg fn-setup --nofms --nowot
 fi
 '''
+      home_done = true
     }
 
     if (!perm_done) {
