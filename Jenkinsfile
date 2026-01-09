@@ -67,6 +67,10 @@ fi
       def dir = "/tmp/throwaway-$project"
       sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
       sh "HOME=$home_dir hg clone freenet:${key} ${dir}"
+      def result = sh script: "cd ${dir} && HOME=$home_dir hg log | egrep . > /dev/null", returnStatus: true
+      if (result != 0) {
+        unstable "$project: Could not clone the repo."
+      }
       sh "rm -r ${dir}"
       toss_done = true
       return 2000
@@ -119,7 +123,7 @@ timestamps {
 	  node ('debbies') {
 	    docker_image.inside(docker_params) {
 	      result = cl()
-		}
+	    }
 	  }
 	  result > 0
 	    }()) {
