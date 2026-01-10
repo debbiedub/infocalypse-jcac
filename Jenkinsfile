@@ -33,6 +33,7 @@ def gen_cl = { project, key ->
   boolean perm_done = false
   boolean toss_done = false
   boolean reinsert_done = false
+  int toss_laps = 1
   int reinsert_level = 2
   return {
     def perm_dir = "$saved_dir/perm-$project"
@@ -64,11 +65,16 @@ fi
     }
 
     if (!toss_done) {
+      def lap = toss_laps++
       def dir = "/tmp/throwaway-$project"
       sh script: "test -d ${dir} && rm -r ${dir}", returnStatus: true
       sh "HOME=$home_dir hg clone freenet:${key} ${dir}"
       def result = sh script: "cd ${dir} && HOME=$home_dir hg log | egrep . > /dev/null", returnStatus: true
       if (result != 0) {
+        if (lap < 3) {
+	  echo "$project: Could not clone the repo lap $lap - will retry"
+	  return 1800 + lap * 100
+	}
         unstable "$project: Could not clone the repo."
       }
       sh "rm -r ${dir}"
