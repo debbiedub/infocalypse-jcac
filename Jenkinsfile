@@ -75,7 +75,7 @@ fi
 	  echo "$project: Could not clone the repo lap $lap - will retry"
 	  return 1800 + lap * 100
 	}
-        unstable "$project: Could not clone the repo."
+        unstable "$project: Could not clone the repo. Giving up after $lap attempts."
       }
       sh "rm -r ${dir}"
       toss_done = true
