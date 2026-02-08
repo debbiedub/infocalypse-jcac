@@ -32,9 +32,9 @@ def gen_cl = { project, key ->
   boolean home_done = false
   boolean perm_done = false
   boolean toss_done = false
-  boolean reinsert_done = false
+  // boolean reinsert_done = false
   int toss_laps = 1
-  int reinsert_level = 2
+  // int reinsert_level = 2
   return {
     def perm_dir = "$saved_dir/perm-$project"
     def home_dir = "$saved_dir/home-$project"
@@ -79,22 +79,22 @@ fi
       }
       sh "rm -r ${dir}"
       toss_done = true
-      return 2000
+      // return 2000
     }
 
-    if (!reinsert_done) {
-      if (reinsert_level == 4) {
-        // Skip level 4 of reinsert
-        reinsert_level++
-      }
-      def level = reinsert_level++
-      def dir = perm_dir
-      sh "cd ${dir} && HOME=$home_dir hg fn-reinsert --level $level"
-      if (reinsert_level < 5) {
-        return 2000
-      }
-      reinsert_done = true
-    }
+    // if (!reinsert_done) {
+    //   if (reinsert_level == 4) {
+    //     // Skip level 4 of reinsert
+    //     reinsert_level++
+    //   }
+    //   def level = reinsert_level++
+    //   def dir = perm_dir
+    //   sh "cd ${dir} && HOME=$home_dir hg fn-reinsert --level $level"
+    //   if (reinsert_level < 5) {
+    //     return 2000
+    //   }
+    //   reinsert_done = true
+    // }
 
     return 0
   }
