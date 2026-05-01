@@ -8,14 +8,16 @@ RUN pip3 install --upgrade pip
 RUN pip3 install 'mercurial'
   ''';
       docker_image = docker.build('hg:3', '--network=host .');
-      docker_params = "--network=host -v $saved_dir:$saved_dir";
+      docker_params = "--network=host";
     }
   }
 
   stage ('clone') {
     node ('debbies') {
       deleteDir()
-      sh '''hg clone static-http://127.0.0.1:8888/USK@0npnMrqZNKRCRoGojZV93UNHCMN-6UU3rRSAmP6jNLE,~BG-edFtdCC1cSH4O3BWdeIYa8Sw5DfyrSV-TKdO5ec,AQACAAE/fmshg/60/ fmshg'''
+      docker_image.inside(docker_params) {
+        sh '''hg clone static-http://127.0.0.1:8888/USK@0npnMrqZNKRCRoGojZV93UNHCMN-6UU3rRSAmP6jNLE,~BG-edFtdCC1cSH4O3BWdeIYa8Sw5DfyrSV-TKdO5ec,AQACAAE/fmshg/60/ fmshg'''
+      }
     }
   }
 }
